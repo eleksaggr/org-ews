@@ -1,7 +1,9 @@
 ;;; ~/.doom.d/org-ews.el -*- lexical-binding: t; -*-
 
+;;; Code:
+
 (defcustom org-ews-host nil
-  "The URI to the used Ews server."
+  "The URI of the used Exchange server."
   :type 'string
   :group 'org-ews)
 
@@ -11,18 +13,18 @@
   :group 'org-ews)
 
 (defcustom org-ews-user nil
-  "The username that is used to login to the Ews server."
+  "The username that is used to login to the Exchange server."
   :type 'string
   :group 'org-ews)
 
 (defcustom org-ews-password nil
-  "The password that is used to login to the Ews server."
+  "The password that is used to login to the Exchange server."
   :type 'string
   :group 'org-ews)
 
 (defcustom org-ews-auth-mechanism
   '(:any :basic :plain :ntlm :negotiate)
-  "The authentication mechanism used to login to the Ews server."
+  "The authentication mechanism used to login to the Exchange server."
   :type (list 'symbol)
   :group 'org-ews)
 
@@ -259,7 +261,7 @@ entry.")
 :PROPERTIES:
 %s
 :END:"
-  "A template for a calendar entry in org-mode format."
+  "A template for a calendar entry in `org-mode' format."
   :type 'string
   :group 'org-ews)
 
@@ -297,3 +299,6 @@ Otherwise they are written to `org-ews-file'."
               (insert content)
               (write-region (point-min) (point-max) org-ews-file nil))
             (with-current-buffer (get-buffer-create org-ews--buffer-name) (insert content)))))
+
+(provide 'org-ews)
+;;; org-ews.el ends here
