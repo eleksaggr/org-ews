@@ -115,7 +115,7 @@ The meaning of these values corresponds to their meaning in the EWS documentatio
           ((string= "Accept" text) :accept)
           ((string= "Decline" text) :decline)
           ((string= "NoResponseReceived" text) :no-response-received)
-          (t org-ews-default-my-response-type))))
+          (t nil))))
 
 (defun org-ews--parse-organizer (dom)
   "Parse DOM and return its children as an assocation list representing its organizer property.
