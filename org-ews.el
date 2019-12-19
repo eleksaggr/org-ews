@@ -108,7 +108,6 @@ If this is nil `org-ews-sync' is never called automatically."
 
 (defun org-ews-start ()
   "Start a periodic synchronization of calendar events.
-
 The interval of synchronization is specified by `org-ews-sync-interval'.
 Should `org-ews-sync-interval' be nil the synchronization is done once only."
   (interactive)
