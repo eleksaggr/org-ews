@@ -125,7 +125,7 @@ If `org-ews-file' is nil, the formatted events are stored in the buffer
 with the name `org-ews--buffer-name'.
 Otherwise they are written to `org-ews-file'."
   (interactive)
-  (let ((content (string-join (mapcar 'org-ews--format (mapcar 'org-ews--parse-fields (org-ews--parse-response (org-ews--execute-curl-request)))) "\n\n")))
+  (let ((content (string-join (mapcar 'org-ews--format (mapcar 'org-ews--parse-fields (org-ews--parse-response (org-ews--execute-curl-request)))) "\n")))
     (if org-ews-file
         (with-temp-buffer
           (insert content)
@@ -251,7 +251,7 @@ If the value is `true' or `True' t is returned, other values result in nil."
 
 (defun org-ews--parse-time-field (dom)
   "Parse DOM and return its text value as a time string in `org-mode' format."
-  (format-time-string "%FT%T%z" (parse-iso8601-time-string (dom-text dom))))
+  (format-time-string "%F %T" (parse-iso8601-time-string (dom-text dom))))
 
 (defun org-ews--parse-legacy-free-busy-status (dom)
   "Parse DOM and return its text value as a symbol representing the legacy free busy status.
@@ -264,12 +264,12 @@ Possible values for the legacy free busy status include:
 - `:working-elsewhere'
 The meaning of these values corresponds to their definition in the EWS documentation."
   (let ((text (dom-text dom)))
-    (cond ((string= "Free" text) :free)
-          ((string= "Busy" text) :busy)
-          ((string= "NoData" text) :no-data)
-          ((string= "OOF" text) :out-of-office)
-          ((string= "Tentative" text) :tentative)
-          ((string= "WorkingElsewhere" text) :working-elsewhere)
+    (cond ((string= "Free" text) "Free")
+          ((string= "Busy" text) "Busy")
+          ((string= "NoData" text) "No data")
+          ((string= "OOF" text) "Out of office")
+          ((string= "Tentative" text) "Tentative")
+          ((string= "WorkingElsewhere" text) "Working elsewhere")
           (t nil))))
 
 (defun org-ews--parse-calendar-item-type (dom)
@@ -281,10 +281,10 @@ Possible values for the calendar item type include:
 - `:recurring-master'
 The meaning of these values corresponds to their meaning in the EWS documentation."
   (let ((text (dom-text dom)))
-    (cond ((string= "Single" text) :single)
-          ((string= "Occurence" text) :occurence)
-          ((string= "Exception" text) :exception)
-          ((string= "RecurringMaster" text) :recurring-master)
+    (cond ((string= "Single" text) "Single")
+          ((string= "Occurence" text) "Occurence")
+          ((string= "Exception" text) "Exception")
+          ((string= "RecurringMaster" text) "Recurring Master")
           (t nil))))
 
 (defun org-ews--parse-my-response-type (dom)
@@ -298,12 +298,12 @@ Possible values for the my response type property include:
 - `:no-response-received'
 The meaning of these values corresponds to their meaning in the EWS documentation."
   (let ((text (dom-text dom)))
-    (cond ((string= "Unknown" text) :unknown)
-          ((string= "Organizer" text) :organizer)
-          ((string= "Tentative" text) :tentative)
-          ((string= "Accept" text) :accept)
-          ((string= "Decline" text) :decline)
-          ((string= "NoResponseReceived" text) :no-response-received)
+    (cond ((string= "Unknown" text) "Unknown")
+          ((string= "Organizer" text) "Organizer")
+          ((string= "Tentative" text) "Tentative")
+          ((string= "Accept" text) "Accept")
+          ((string= "Decline" text) "Decline")
+          ((string= "NoResponseReceived" text) "No response received")
           (t nil))))
 
 (defun org-ews--parse-organizer (dom)
