@@ -117,6 +117,7 @@ Should `org-ews-sync-interval' be nil the synchronization is done once only."
 
 (defun org-ews-stop ()
   "Stop the periodic synchronization of calendar events."
+  (interactive)
   (cancel-timer org-ews--timer))
 
 (defun org-ews-sync ()
@@ -211,13 +212,18 @@ used to limit the maximum amount of entries fetched."
     (:item-type . '(:parser org-ews--parse-calendar-item-type :tag 'CalendarItemType :required nil))
     (:organizer . '(:parser org-ews--parse-organizer :tag 'Organizer :required nil))))
 
+;; (defmacro org-ews--get-field-property (prop)
+;;   "Define a function named `(concat \"org-ews--get-field-\" PROP)'.
+;; The function returns the respective property, when given a field from `org-ews--fields'."
+;;   `(defun ,(intern (concat "org-ews--get-field-" prop)) (field)
+;;      ,(concat "Return the `:" prop "' property of FIELD.
+;; Field must exist in `org-ews--fields', otherwise nil is returned.")
+;;      (plist-get (caddr (assq field org-ews--fields)) ,(intern (concat ":" prop)))))
+
 (defmacro org-ews--get-field-property (prop)
-  "Define a function named `(concat \"org-ews--get-field-\" PROP)'.
-The function returns the respective property, when given a field from `org-ews--fields'."
-  `(defun ,(intern (concat "org-ews--get-field-" prop)) (field)
-     ,(concat "Return the `:" prop "' property of FIELD.
-Field must exist in `org-ews--fields', otherwise nil is returned.")
-     (plist-get (caddr (assq field org-ews--fields)) ,(intern (concat ":" prop)))))
+  "Defines a function that returns the property PROP of a field in FIELDS."
+  `(defun ,(intern (concat "org-ews--get-field-" prop)) (field fields)
+     (plist-get (caddr (assq field fields)) ,(intern (concat ":" prop)))))
 
 (org-ews--get-field-property "parser")
 (org-ews--get-field-property "tag")
@@ -229,14 +235,14 @@ Field must exist in `org-ews--fields', otherwise nil is returned.")
   "Parse DOM and return all contained fields of an entry as an alist."
   (let ((entry (list)))
     (dolist (field org-ews--fields entry)
-      (map-put entry (car field) (org-ews--parse-field dom (car field))))))
+      (map-put entry (car field) (org-ews--parse-field dom (car field) org-ews--fields)))))
 
-(defun org-ews--parse-field (dom field)
+(defun org-ews--parse-field (dom field fields)
   "Parse DOM and return the value associated with FIELD.
 FIELD should be a key from `org-ews--fields'."
-  (let ((value (funcall (org-ews--get-field-parser field)
-                        (dom-by-tag dom (eval (org-ews--get-field-tag field))))))
-    (if (not (org-ews--get-field-empty field))
+  (let ((value (funcall (org-ews--get-field-parser field fields)
+                        (dom-by-tag dom (eval (org-ews--get-field-tag field fields))))))
+    (if (not (org-ews--get-field-empty field fields))
         (unless (and (stringp value) (string= "" value)) value) value)))
 
 (defun org-ews--parse-text-field (dom)
@@ -306,11 +312,16 @@ The meaning of these values corresponds to their meaning in the EWS documentatio
           ((string= "NoResponseReceived" text) "No response received")
           (t nil))))
 
+(defvar org-ews--organizer-fields
+  '((:name . '(:parser org-ews--parse-text-field :tag 'Name))
+    (:email-address . '(:parser org-ews--parse-text-field :tag 'EmailAddress))))
+
 (defun org-ews--parse-organizer (dom)
   "Parse DOM and return its children as an assocation list representing its organizer property."
-  (ignore))
+  (concat (org-ews--parse-field dom :name org-ews--organizer-fields) " <" (org-ews--parse-field dom :email-address org-ews--organizer-fields) ">"))
 
-(defconst org-ews--properties '((:item-type . "TYPE")
+(defconst org-ews--properties '((:organizer . "ORGANIZER")
+                                (:item-type . "TYPE")
                                 (:my-response-type . "RESPONSE")
                                 (:legacy-free-busy-status . "STATUS")
                                 (:location . "LOCATION")
